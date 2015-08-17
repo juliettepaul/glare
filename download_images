@@ -84,10 +84,10 @@ mkdir -p $TARGET_DIR
 # Create temporary download dir
 mkdir -p $DOWNLOAD_DIR
 # Hard link all current copies of templates (used later with wget option --unlink to provide atomic downloads)
-(cd $DOWNLOAD_DIR && ln -f $TARGET_DIR/*)
+for i in $(ls $TARGET_DIR); do ln -f $TARGET_DIR/$i $DOWNLOAD_DIR/$i; echo "linking n -f $TARGET_DIR/$i $DOWNLOAD_DIR/$i"; done
 # Download images that are out of date unlinking ones it clobbers without changing anything in live template directory
 (cd $DOWNLOAD_DIR && wget --unlink -r -np -nH --cut-dirs=1 -N -l 1 $SERVER_URI -R html,md)
 # Atomically hard link all changed images
-(cd $TARGET_DIR && ln -f $DOWNLOAD_DIR/*)
+for i in $(ls $DOWNLOAD_DIR); do ln -f $DOWNLOAD_DIR/$i $TARGET_DIR/$i; echo "linking ln -f $DOWNLOAD_DIR/$i $TARGET_DIR/$i"; done
 # Clean up download dir
 rm -rf $DOWNLOAD_DIR
