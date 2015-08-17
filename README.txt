@@ -12,3 +12,6 @@
       ^$$$B  $$$$\     $$$$$$$$$$$$   d$$R"
         "*$bd$$$$      '*$$$$$$$$$$$o+#"
              """"          """""""
+
+- Does this integrate with Keystone Auth?
+No!
