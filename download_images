@@ -1,18 +1,93 @@
 #!/bin/bash
-DOWNLOAD_DIR=/var/virt/t_d
-TEMPLATE_DIR=/var/virt/t_real
+
+# Defaults
+USAGE_TXT="Usage $0 -t|--target-dir <target folder> -d|--download-dir <temporary directory for downloading> -s|--server <server uri for images>"
+
+if [ -f ~/.glare.conf ]; then
+    IFS="="
+    while read -r name value
+    do
+        if [ -z ${!name} ]; then
+            eval "${name}='${value}'"
+        fi
+    done < ~/.glare.conf
+fi
+
+if [ -f /etc/glare.conf ]; then
+    IFS="="
+    while read -r name value
+    do
+        if [ -z ${!name} ]; then
+            eval "${name}='${value}'"
+        fi
+    done < /etc/glare.conf
+fi
+
+# Argument overrides
+ARGS=$(getopt -o t:d:s:h -l "target-dir:,download-dir:,server:,help" -n "$(basename $0)" -- "$@");
+if [ $? -ne 0 ];
+then
+    exit 1
+fi
+
+eval set -- "$ARGS";
+while true; do
+    case "$1" in
+        -t|--target-dir)
+            shift;
+            if [ -n "$1" ]; then
+                TARGET_DIR=$1
+                shift;
+            fi
+            ;;
+        -d|--download-dir)
+            shift;
+            if [ -n "$1" ]; then
+                DOWNLOAD_DIR=$1
+                shift;
+            fi
+            ;;
+        -s|--server)
+            shift;
+            if [ -n "$1" ]; then
+                SERVER_URI=$1
+                shift;
+            fi
+            ;;
+        -h|--help)
+            echo "$USAGE_TXT"
+            exit;
+            ;;
+        --)
+            shift;
+      break;
+      ;;
+  esac
+done
+
+if [ -z $TARGET_DIR ]; then
+    echo "You must specify a target directory"
+    exit 2
+fi
+
+if [ -z $SERVER_URI ]; then
+    echo "You must specify a server for images"
+    exit 3
+fi
+
+if [ -z $DOWNLOAD_DIR ]; then
+    DOWNLOAD_DIR="/tmp"
+fi
+
 # Create template directory
-mkdir -p $TEMPLATE_DIR
+mkdir -p $TARGET_DIR
 # Create temporary download dir
 mkdir -p $DOWNLOAD_DIR
-cd $DOWNLOAD_DIR
 # Hard link all current copies of templates (used later with wget option --unlink to provide atomic downloads)
-ln -f $TEMPLATE_DIR/*
+(cd $DOWNLOAD_DIR && ln -f $TARGET_DIR/*)
 # Download images that are out of date unlinking ones it clobbers without changing anything in live template directory
-wget --unlink -r -np -nH --cut-dirs=1 -N -l 1 $SERVER_URI
-# Replace images
-cd $TEMPLATE_DIR
+(cd $DOWNLOAD_DIR && wget --unlink -r -np -nH --cut-dirs=1 -N -l 1 $SERVER_URI -R html,md)
 # Atomically hard link all changed images
-ln -f $DOWNLOAD_DIR/*
+(cd $TARGET_DIR && ln -f $DOWNLOAD_DIR/*)
 # Clean up download dir
 rm -rf $DOWNLOAD_DIR
