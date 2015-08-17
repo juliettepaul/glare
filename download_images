@@ -1,0 +1,18 @@
+#!/bin/bash
+DOWNLOAD_DIR=/var/virt/t_d
+TEMPLATE_DIR=/var/virt/t_real
+# Create template directory
+mkdir -p $TEMPLATE_DIR
+# Create temporary download dir
+mkdir -p $DOWNLOAD_DIR
+cd $DOWNLOAD_DIR
+# Hard link all current copies of templates (used later with wget option --unlink to provide atomic downloads)
+ln -f $TEMPLATE_DIR/*
+# Download images that are out of date unlinking ones it clobbers without changing anything in live template directory
+wget --unlink -r -np -nH --cut-dirs=1 -N -l 1 $SERVER_URI
+# Replace images
+cd $TEMPLATE_DIR
+# Atomically hard link all changed images
+ln -f $DOWNLOAD_DIR/*
+# Clean up download dir
+rm -rf $DOWNLOAD_DIR

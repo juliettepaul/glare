@@ -1,0 +1,135 @@
+#!/bin/bash
+# exit on errors
+set -o errexit
+# catch pipe fails
+set -o pipefail
+
+if [[ $EUID -eq 0 ]]; then
+   echo "Do not run this script as root, it will corrupt permissions for everyone else when uploading images"
+   exit 3
+fi
+
+# Defaults
+USAGE_TXT="Usage $0 -i|--image <image_file> -m|--message <changelog message> [ -d|--directory <directory for images> -l|--limit <maxmium images per name> ]"
+
+if [ -f ~/.glare.conf ]; then
+    IFS="="
+    while read -r name value
+    do
+        if [ -z ${!name} ]; then
+            eval "${name}='${value}'"
+        fi
+    done < ~/.glare.conf
+fi
+
+if [ -f /etc/glare.conf ]; then
+    IFS="="
+    while read -r name value
+    do
+        if [ -z ${!name} ]; then
+            eval "${name}='${value}'"
+        fi
+    done < /etc/glare.conf
+fi
+
+# Argument overrides
+ARGS=$(getopt -o i:m:d:l:h -l "image:,message:,directory:,limit:,help" -n "$(basename $0)" -- "$@");
+if [ $? -ne 0 ];
+then
+    exit 1
+fi
+
+eval set -- "$ARGS";
+while true; do
+    case "$1" in
+        -i|--image)
+            shift;
+            if [ -n "$1" ]; then
+                IMAGE=$1
+                shift;
+            fi
+            ;;
+        -m|--message)
+            shift;
+            if [ -n "$1" ]; then
+                MESSAGE=$1
+                shift;
+            fi
+            ;;
+        -d|--directory)
+            shift;
+            if [ -n "$1" ]; then
+                IMAGE_DIR=$1
+                shift;
+            fi
+            ;;
+        -l|--limit)
+            shift;
+            if [ -n "$1" ]; then
+                MAX=$1
+                shift;
+            fi
+            ;;
+        -h|--help)
+            echo "$USAGE_TXT"
+            exit;
+            ;;
+        --)
+            shift;
+      break;
+      ;;
+  esac
+done
+
+if [ -z $IMAGE_DIR ]; then
+    IMAGE_DIR="/var/www/html/vm_images"
+fi
+
+if [ -z $MAX ]; then
+    MAX=5
+fi
+
+ARCHIVE_DIR="$IMAGE_DIR/archive"
+
+if [ -z "$IMAGE" -o -z "$MESSAGE" ]; then
+    echo "$USAGE_TXT"
+    exit
+fi
+
+if [ ! -f $IMAGE ]; then
+    echo "Sorry but image specified: $IMAGE is not a file" >&2
+    exit 1
+fi
+
+echo "Verifying Image..."
+if ! (file $IMAGE | grep '\(partition\|filesystem\)'); then
+    echo "Specified image is not a valid image" >&2
+    exit 2
+fi
+
+MD5=$(md5sum $IMAGE | cut -d' ' -f1)
+echo "Uploading $IMAGE as $IMAGE-$MD5"
+mkdir -p $ARCHIVE_DIR
+pv $IMAGE > $ARCHIVE_DIR/$IMAGE-$MD5
+echo "Setting current image to uploaded..."
+ln -sf $IMAGE_DIR/archive/$IMAGE-$MD5 $IMAGE_DIR/$IMAGE
+echo "Writing changelog..."
+touch $IMAGE_DIR/$IMAGE.md
+echo "# [$MD5] - $(date)"$'\n'"## $MESSAGE"$'\n\n'"$(cat $IMAGE_DIR/$IMAGE.md)" > $IMAGE_DIR/$IMAGE.md
+echo "Success!"
+OLDER_IMAGES=$(cd $ARCHIVE_DIR && ls -1t $IMAGE-* | awk "NR>$MAX")
+if [ -n "$OLDER_IMAGES" ]; then
+    echo "There are currently more images of type '$IMAGE' stored than the configured maximum of $MAX"
+    echo "Images that would be deleted:"
+    echo "$OLDER_IMAGES"
+    read -p "Would you like to cleanup these images now (y/n)? " -n 1 -r
+    echo    
+    if [[ ! $REPLY =~ ^[Yy]$ ]]
+    then
+        exit
+    fi
+    echo "Cleaning up images per request in 5 seconds (Ctrl+C to abort)..."
+    sleep 5
+    RET=$(cd $ARCHIVE_DIR && echo "$OLDER_IMAGES" | xargs rm -f)
+    echo "Done!"
+fi
