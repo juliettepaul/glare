@@ -58,7 +58,7 @@ if [ -z $TARGET_DIR ]; then
     exit 2
 fi
 
-if [ -z $SERVER_URI ]; then
+if [ -z $SERVER ]; then
     echo "You must specify a server for images"
     exit 3
 fi
@@ -74,7 +74,7 @@ mkdir -p $DOWNLOAD_DIR
 # Hard link all current copies of templates (used later with wget option --unlink to provide atomic downloads)
 for i in $(ls $TARGET_DIR); do ln -f $TARGET_DIR/$i $DOWNLOAD_DIR/$i; echo "linking n -f $TARGET_DIR/$i $DOWNLOAD_DIR/$i"; done
 # Download images that are out of date unlinking ones it clobbers without changing anything in live template directory
-(cd $DOWNLOAD_DIR && wget --unlink -r -np -nH --cut-dirs=1 -N -l 1 $SERVER_URI -R html,md)
+(cd $DOWNLOAD_DIR && wget --unlink -r -np -nH --cut-dirs=1 -N -l 1 $SERVER -R html,md)
 # Atomically hard link all changed images
 for i in $(ls $DOWNLOAD_DIR); do ln -f $DOWNLOAD_DIR/$i $TARGET_DIR/$i; echo "linking ln -f $DOWNLOAD_DIR/$i $TARGET_DIR/$i"; done
 # Clean up download dir
