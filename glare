@@ -1,0 +1,10 @@
+#!/bin/bash
+# Crappy wrapper around my glare subcommands
+GLARE_PATH="$(dirname $(readlink -f $0))/"
+
+PATH_FOR_PLUGINS="$GLARE_PATH:$PATH"
+SUB_COMMAND=$(PATH="$PATH_FOR_PLUGINS" which glare-$1 2>/dev/null)
+RETURN_VAL=$?
+
+shift
+$SUB_COMMAND "$@"
