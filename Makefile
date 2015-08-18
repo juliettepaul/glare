@@ -9,7 +9,6 @@ DOC_FILES=*.md *.txt
 PKG_DIR=BUILD
 PKG_NAME=$(NAME)-$(VERSION)
 PKG=$(PKG_DIR)/$(PKG_NAME).tar.gz
-SIG=$(PKG_DIR)/$(PKG_NAME).asc
 
 PREFIX?=/usr/local
 DOC_DIR=$(PREFIX)/share/doc/$(PKG_NAME)
@@ -23,9 +22,9 @@ $(PKG): pkg
 build: $(PKG)
 
 clean:
-	rm -f $(PKG) $(SIG)
+	rm -f $(PKG)
 
-all: $(PKG) $(SIG)
+all: $(PKG)
 
 test:
 
@@ -33,7 +32,7 @@ tag:
 	git tag v$(VERSION)
 	git push --tags
 
-release: $(PKG) $(SIG) tag
+release: $(PKG) tag
 
 install:
 	for dir in $(INSTALL_DIRS); do mkdir -p $(PREFIX)/$$dir; done
