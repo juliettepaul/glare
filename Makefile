@@ -45,4 +45,4 @@ uninstall:
 	for file in $(INSTALL_FILES); do rm -f $(PREFIX)/$$file; done
 	rm -rf $(DOC_DIR)
 
-
+.PHONY: build sign clean test tag release install uninstall all
