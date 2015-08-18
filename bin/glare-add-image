@@ -12,24 +12,12 @@ fi
 # Defaults
 USAGE_TXT="Usage $0 -i|--image <image_file> -m|--message <changelog message> [ -d|--directory <directory for images> -l|--limit <maxmium images per name> ]"
 
-if [ -f ~/.glare.conf ]; then
-    IFS="="
-    while read -r name value
-    do
-        if [ -z ${!name} ]; then
-            eval "${name}='${value}'"
-        fi
-    done < ~/.glare.conf
+if [[ -e /etc/glare.conf ]]; then
+    source /etc/glare.conf
 fi
 
-if [ -f /etc/glare.conf ]; then
-    IFS="="
-    while read -r name value
-    do
-        if [ -z ${!name} ]; then
-            eval "${name}='${value}'"
-        fi
-    done < /etc/glare.conf
+if [[ -e ~/.glare.conf ]]; then
+    source ~/.glare.conf
 fi
 
 # Argument overrides
@@ -59,14 +47,14 @@ while true; do
         -d|--directory)
             shift;
             if [ -n "$1" ]; then
-                IMAGE_DIR=$1
+                DIRECTORY=$1
                 shift;
             fi
             ;;
         -l|--limit)
             shift;
             if [ -n "$1" ]; then
-                MAX=$1
+                LIMIT=$1
                 shift;
             fi
             ;;
@@ -81,15 +69,15 @@ while true; do
   esac
 done
 
-if [ -z $IMAGE_DIR ]; then
-    IMAGE_DIR="/var/www/html/vm_images"
+if [ -z $DIRECTORY ]; then
+    DIRECTORY="/var/www/html/vm_images"
 fi
 
-if [ -z $MAX ]; then
-    MAX=5
+if [ -z $LIMIT ]; then
+    LIMIT=5
 fi
 
-ARCHIVE_DIR="$IMAGE_DIR/archive"
+ARCHIVE_DIR="$DIRECTORY/archive"
 
 if [ -z "$IMAGE" -o -z "$MESSAGE" ]; then
     echo "$USAGE_TXT"
@@ -112,14 +100,14 @@ echo "Uploading $IMAGE as $IMAGE-$MD5"
 mkdir -p $ARCHIVE_DIR
 pv $IMAGE > $ARCHIVE_DIR/$IMAGE-$MD5
 echo "Setting current image to uploaded..."
-ln -sf $IMAGE_DIR/archive/$IMAGE-$MD5 $IMAGE_DIR/$IMAGE
+ln -sf $DIRECTORY/archive/$IMAGE-$MD5 $DIRECTORY/$IMAGE
 echo "Writing changelog..."
-touch $IMAGE_DIR/$IMAGE.md
-echo "# [$MD5] - $(date)"$'\n'"## $MESSAGE"$'\n\n'"$(cat $IMAGE_DIR/$IMAGE.md)" > $IMAGE_DIR/$IMAGE.md
+touch $DIRECTORY/$IMAGE.md
+echo "# [$MD5] - $(date)"$'\n'"## $MESSAGE"$'\n\n'"$(cat $DIRECTORY/$IMAGE.md)" > $DIRECTORY/$IMAGE.md
 echo "Success!"
-OLDER_IMAGES=$(cd $ARCHIVE_DIR && ls -1t $IMAGE-* | awk "NR>$MAX")
+OLDER_IMAGES=$(cd $ARCHIVE_DIR && ls -1t $IMAGE-* | awk "NR>$LIMIT")
 if [ -n "$OLDER_IMAGES" ]; then
-    echo "There are currently more images of type '$IMAGE' stored than the configured maximum of $MAX"
+    echo "There are currently more images of type '$IMAGE' stored than the configured maximum of $LIMIT"
     echo "Images that would be deleted:"
     echo "$OLDER_IMAGES"
     read -p "Would you like to cleanup these images now (y/n)? " -n 1 -r

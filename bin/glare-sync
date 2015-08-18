@@ -3,24 +3,12 @@
 # Defaults
 USAGE_TXT="Usage $0 -t|--target-dir <target folder> -d|--download-dir <temporary directory for downloading> -s|--server <server uri for images>"
 
-if [ -f ~/.glare.conf ]; then
-    IFS="="
-    while read -r name value
-    do
-        if [ -z ${!name} ]; then
-            eval "${name}='${value}'"
-        fi
-    done < ~/.glare.conf
+if [[ -e /etc/glare.conf ]]; then
+    source /etc/glare.conf
 fi
 
-if [ -f /etc/glare.conf ]; then
-    IFS="="
-    while read -r name value
-    do
-        if [ -z ${!name} ]; then
-            eval "${name}='${value}'"
-        fi
-    done < /etc/glare.conf
+if [[ -e ~/.glare.conf ]]; then
+    source ~/.glare.conf
 fi
 
 # Argument overrides
@@ -50,7 +38,7 @@ while true; do
         -s|--server)
             shift;
             if [ -n "$1" ]; then
-                SERVER_URI=$1
+                SERVER=$1
                 shift;
             fi
             ;;
