@@ -121,3 +121,4 @@ if [ -n "$OLDER_IMAGES" ]; then
     RET=$(cd $ARCHIVE_DIR && echo "$OLDER_IMAGES" | xargs rm -f)
     echo "Done!"
 fi
+glare rebuild-index

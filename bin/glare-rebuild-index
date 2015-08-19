@@ -1,0 +1,55 @@
+#!/bin/bash
+# exit on errors
+set -o errexit
+# catch pipe fails
+set -o pipefail
+
+if [[ $EUID -eq 0 ]]; then
+   echo "Do not run this script as root, it will corrupt permissions for everyone else when uploading images"
+   exit 3
+fi
+
+# Defaults
+USAGE_TXT="Usage $0 [ -d|--directory <directory for images> ]"
+
+if [[ -e /etc/glare.conf ]]; then
+    source /etc/glare.conf
+fi
+
+if [[ -e ~/.glare.conf ]]; then
+    source ~/.glare.conf
+fi
+
+# Argument overrides
+ARGS=$(getopt -o d:h -l "directory:,help" -n "$(basename $0)" -- "$@");
+if [ $? -ne 0 ];
+then
+    exit 1
+fi
+
+eval set -- "$ARGS";
+while true; do
+    case "$1" in
+        -d|--directory)
+            shift;
+            if [ -n "$1" ]; then
+                DIRECTORY=$1
+                shift;
+            fi
+            ;;
+        -h|--help)
+            echo "$USAGE_TXT"
+            exit;
+            ;;
+        --)
+            shift;
+      break;
+      ;;
+  esac
+done
+
+if [ -z $DIRECTORY ]; then
+    DIRECTORY="/var/www/html/vm_images"
+fi
+
+(cd $DIRECTORY ; find -t l -O1 ./ > $DIRECTORY/images.txt)
