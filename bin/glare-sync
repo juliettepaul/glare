@@ -3,6 +3,9 @@
 # Defaults
 USAGE_TXT="Usage $0 -t|--target-dir <target folder> -d|--download-dir <temporary directory for downloading> -s|--server <server uri for images>"
 
+# So your friends can edit these files too
+umask 002
+
 if [[ -e /etc/glare.conf ]]; then
     source /etc/glare.conf
 fi

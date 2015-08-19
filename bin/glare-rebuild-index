@@ -9,6 +9,9 @@ if [[ $EUID -eq 0 ]]; then
    exit 3
 fi
 
+# So your friends can edit these files too
+umask 002
+
 # Defaults
 USAGE_TXT="Usage $0 [ -d|--directory <directory for images> ]"
 
