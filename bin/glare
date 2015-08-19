@@ -1,5 +1,4 @@
 #!/bin/bash
-UMASK=$(umask)
 umask 002
 # Crappy wrapper around my glare subcommands
 GLARE_PATH="$(dirname $(readlink -f $0))/"
@@ -10,5 +9,3 @@ RETURN_VAL=$?
 
 shift
 $SUB_COMMAND "$@"
-
-umask $UMASK
