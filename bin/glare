@@ -15,7 +15,7 @@ else
     echo "Invalid glare command $1"
     echo "Valid subcommands:"
     for i in $SUB_CMDS; do 
-        SHORT_USAGE=$(glare $i -h 2>/dev/null | sed -e 's/Usage.*glare-/glare /')
+        SHORT_USAGE=$(PATH=$PATH_FOR_PLUGINS glare $i -h 2>/dev/null | sed -e 's/Usage.*glare-/glare /')
         if [ 0 -eq $? -a -n "$SHORT_USAGE" ]; then
             echo $SHORT_USAGE;
         else
