@@ -52,4 +52,4 @@ if [ -z $DIRECTORY ]; then
     DIRECTORY="/var/www/html/vm_images"
 fi
 
-(cd $DIRECTORY ; find -t l -O1 ./ > $DIRECTORY/images.txt)
+(cd $DIRECTORY ; find . -type l -exec basename {} \; > $DIRECTORY/images.txt)

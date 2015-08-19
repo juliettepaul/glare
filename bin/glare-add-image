@@ -95,19 +95,21 @@ if ! (file $IMAGE | grep '\(partition\|filesystem\)'); then
     exit 2
 fi
 
+IMAGE_SHORTNAME=$(basename $IMAGE)
+
 MD5=$(md5sum $IMAGE | cut -d' ' -f1)
-echo "Uploading $IMAGE as $IMAGE-$MD5"
+echo "Uploading $IMAGE as $IMAGE_SHORTNAME-$MD5"
 mkdir -p $ARCHIVE_DIR
-pv $IMAGE > $ARCHIVE_DIR/$IMAGE-$MD5
+pv $IMAGE > $ARCHIVE_DIR/$IMAGE_SHORTNAME-$MD5
 echo "Setting current image to uploaded..."
-ln -sf $DIRECTORY/archive/$IMAGE-$MD5 $DIRECTORY/$IMAGE
+ln -sf $DIRECTORY/archive/$IMAGE_SHORTNAME-$MD5 $DIRECTORY/$IMAGE_SHORTNAME
 echo "Writing changelog..."
-touch $DIRECTORY/$IMAGE.md
-echo "# [$MD5] - $(date)"$'\n'"## $MESSAGE"$'\n\n'"$(cat $DIRECTORY/$IMAGE.md)" > $DIRECTORY/$IMAGE.md
+touch $DIRECTORY/$IMAGE_SHORTNAME.md
+echo "# [$MD5] - $(date)"$'\n'"## $MESSAGE"$'\n\n'"$(cat $DIRECTORY/$IMAGE_SHORTNAME.md)" > $DIRECTORY/$IMAGE_SHORTNAME.md
 echo "Success!"
-OLDER_IMAGES=$(cd $ARCHIVE_DIR && ls -1t $IMAGE-* | awk "NR>$LIMIT")
+OLDER_IMAGES=$(cd $ARCHIVE_DIR && ls -1t $IMAGE_SHORTNAME-* | awk "NR>$LIMIT")
 if [ -n "$OLDER_IMAGES" ]; then
-    echo "There are currently more images of type '$IMAGE' stored than the configured maximum of $LIMIT"
+    echo "There are currently more images of type '$IMAGE_SHORTNAME' stored than the configured maximum of $LIMIT"
     echo "Images that would be deleted:"
     echo "$OLDER_IMAGES"
     read -p "Would you like to cleanup these images now (y/n)? " -n 1 -r

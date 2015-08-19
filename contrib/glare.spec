@@ -1,6 +1,6 @@
 Summary: A light-weight replacement for glance
 Name: glare
-Version: 0.0.4
+Version: 0.0.5
 Release: 1%{?dist}
 License: MIT
 Group: Applications/Internet

@@ -1,5 +1,5 @@
 NAME=glare
-VERSION=0.0.4
+VERSION=0.0.5
 
 DIRS=etc lib bin sbin share
 INSTALL_DIRS=`find $(DIRS) -type d 2>/dev/null`
