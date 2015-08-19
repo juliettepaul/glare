@@ -9,6 +9,7 @@ Source: https://github.com/jayson/glare/archive/v%{version}.tar.gz
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: wget >= 1.14
+Requires: pv
 
 
 %description
