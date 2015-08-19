@@ -14,6 +14,13 @@ else
     SUB_CMDS=$(IFS=:; find $PATH_FOR_PLUGINS -maxdepth 1 -executable -type f -name 'glare-*' -printf '%f\n' 2>/dev/null | cut -d'-' -f2-1000 | sort | uniq)
     echo "Invalid glare command $1"
     echo "Valid subcommands:"
-    for i in $SUB_CMDS; do echo "glare $i"; done
+    for i in $SUB_CMDS; do 
+        SHORT_USAGE=$(glare $i -h 2>/dev/null | sed -e 's/Usage.*glare-/glare /')
+        if [ 0 -eq $? -a -n "$SHORT_USAGE" ]; then
+            echo $SHORT_USAGE;
+        else
+            echo "glare $i"
+        fi
+    done
     exit 1
 fi
