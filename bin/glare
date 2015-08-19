@@ -7,5 +7,13 @@ PATH_FOR_PLUGINS="$GLARE_PATH:$PATH"
 SUB_COMMAND=$(PATH="$PATH_FOR_PLUGINS" which glare-$1 2>/dev/null)
 RETURN_VAL=$?
 
-shift
-$SUB_COMMAND "$@"
+if [ 0 -eq $RETURN_VAL ]; then
+    shift
+    $SUB_COMMAND "$@"
+else
+    SUB_CMDS=$(IFS=:; find $PATH_FOR_PLUGINS -maxdepth 1 -executable -type f -name 'glare-*' -printf '%f\n' 2>/dev/null | cut -d'-' -f2-1000 | sort | uniq)
+    echo "Invalid glare command $1"
+    echo "Valid subcommands:"
+    for i in $SUB_CMDS; do echo "glare $i"; done
+    exit 1
+fi
