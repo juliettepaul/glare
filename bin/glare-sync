@@ -78,7 +78,7 @@ mkdir -p $DOWNLOAD_DIR
 for i in $(ls $TARGET_DIR); do ln -f $TARGET_DIR/$i $DOWNLOAD_DIR/$i; done
 IMAGE_LIST=$(curl $SERVER/images.txt)
 # Download images that are out of date unlinking ones it clobbers without changing anything in live template directory
-for image in $IMAGE_LIST; do (cd $DOWNLOAD_DIR && wget -nH --cut-dirs=1 --unlink -N $SERVER/$image); done
+for image in $IMAGE_LIST; do (cd $DOWNLOAD_DIR && wget -nv -nH --cut-dirs=1 --unlink -N $SERVER/$image); done
 # Atomically hard link all changed images
 for i in $(ls $DOWNLOAD_DIR); do ln -f $DOWNLOAD_DIR/$i $TARGET_DIR/$i; done
 # Clean up download dir
